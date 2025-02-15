@@ -5,9 +5,11 @@ class Cocinero {
 
     var property nivel = principiante
 
-    method prepararExitosamente(unaReceta) {
+    //PUNTO 3
+    method prepararComida(unaReceta) {
         if(self.puedePreparar(unaReceta)) {
             preparaciones.add(unaReceta)
+            self.evaluarNivel()
         }
     }
 
@@ -15,16 +17,22 @@ class Cocinero {
         return nivel.puedePreparar(unaReceta, self)
     }
 
+    method recetasSimilares(unaReceta) {
+        return preparaciones.filter({receta => receta.esRecetaSimilar(unaReceta)})
+    }
+
     method tieneRecetaSimilar(otraReceta) {
         return preparaciones.any({receta => receta.esRecetaSimilar(otraReceta)})
     }
 
+    //PUNTO 1
     method experienciaCocinero() {
-        return preparaciones.sum({receta => receta.experiencia()})
+        return preparaciones.sum({receta => receta.experiencia(self)})
     }
 
-    method superarNivel() {
-        nivel = nivel.serSuperado(self)
+    //PUNTO 2 (logica en cada nivel)
+    method evaluarNivel() {
+        nivel = nivel.evaluarNivel(self)
     }
 
     method comidasDificiles() {
@@ -33,6 +41,17 @@ class Cocinero {
 
     method preparoMasComidasDificilesQue(unaCantidad) {
         return self.comidasDificiles().size() > unaCantidad
+    }
+
+    method experienciaAdquirida(unaReceta) {
+        return self.recetasSimilares(unaReceta).sum({receta => receta.experiencia(self)})
+    }
+    method perfecciono(unaReceta) {
+        return self.experienciaAdquirida(unaReceta) * 3 > unaReceta.experiencia(self)
+    }
+
+    method recetaMasExitosa(recetas) {
+        return recetas.max({receta => receta.experiencia(self)})
     }
 }
 
@@ -43,7 +62,16 @@ object principiante {
         return !unaReceta.esDificil()
     }
 
-    method serSuperado(unCocinero) {
+    method calidad(unaReceta, unCocinero) {
+        if(unaReceta.tieneMenosIngredientesQue(4)) {
+            return normal
+        } else {
+            return pobre
+        }
+    }
+
+    //PUNTO 2
+    method evaluarNivel(unCocinero) {
         if(unCocinero.experienciaCocinero() > 100) {
             return experimentado
         } else {
@@ -57,7 +85,16 @@ object experimentado {
         return unCocinero.tieneRecetaSimilar(unaReceta)
     }
 
-    method serSuperado(unCocinero) {
+    method calidad(unaReceta, unCocinero) {
+        if(unCocinero.perfecciono(unaReceta)) {
+            return new Superior(plus = unCocinero.recetasSimilares(unaReceta))
+        } else {
+            return normal
+        }
+    }
+
+    //PUNTO 2
+    method evaluarNivel(unCocinero) {
         if(unCocinero.preparoMasComidasDificilesQue(4)) {
             return chef
         } else {
@@ -69,5 +106,15 @@ object experimentado {
 object chef {
     method puedePreparar(unaReceta, unCocinero) = true
 
-    method serSuperado(unCocinero) {return self} // no puede avanzar mas que chef
+    //PUNTO 2
+    method evaluarNivel(unCocinero) {return self}
+     // no puede avanzar mas que chef
+
+    method calidad(unaReceta, unCocinero) {
+        if(unCocinero.perfecciono(unaReceta)) {
+            return new Superior(plus = unCocinero.recetasSimilares(unaReceta))
+        } else {
+            return normal
+        }
+    }
 }
