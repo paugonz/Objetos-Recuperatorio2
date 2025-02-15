@@ -1,8 +1,10 @@
+import cocineros.*
+
 class Receta {
     var property ingredientes = #{}
     const property dificultad
 
-    var tipoComida  //pobre, normal, superior
+    var property tipoComida  //pobre, normal, superior
 
     method cantidadIngredientes() {
         return ingredientes.size()
@@ -27,6 +29,11 @@ class Receta {
     method experienciaNormal() {
         return self.cantidadIngredientes() * self.dificultad()
     }
+
+    method experiencia() {
+        return tipoComida.experienciaReceta(self)
+    }
+
 }
 
 //Calidad comida
@@ -36,15 +43,18 @@ object normal {
     }
 }
 object pobre {
-    var property experienciaMaxima = 100 //
+    var property experienciaMaxima = 100 //inicializo para poder usar
 
     method experienciaReceta(unaReceta) {
-        return 
+        return unaReceta.experienciaNormal().min(experienciaMaxima)
     }
 }
 
+object superior {
+    var property plus = 0 // inicializo para poder usar, se determina al momento de preparacion
 
-const salsa = new Receta(ingredientes = #{"tomate", "carne", "sal"}, dificultad = 10, tipoComida = "normal")
-const salsa2 = new Receta(ingredientes = #{"carne", "sal", "tomate"}, dificultad = 9, tipoComida = "normal")
-const salsa3 = new Receta(ingredientes = #{"carne", "sal", "tomate", "agua"}, dificultad = 8, tipoComida = "normal")
+    method experienciaReceta(unaReceta) {
+        return unaReceta.experienciaNormal() + plus
+    }
+}
 
