@@ -4,7 +4,14 @@ class Receta {
     var property ingredientes = #{}
     const property dificultad
 
-    var property tipoComida  //pobre, normal, superior
+
+    method tipoComida(cocinero) {
+        return self.tipoComidaSegunNivel(cocinero)
+    }
+
+    method tipoComidaSegunNivel(cocinero) {
+        return cocinero.nivel().calidad(self, cocinero)
+    }
 
     method cantidadIngredientes() {
         return ingredientes.size()
@@ -19,7 +26,7 @@ class Receta {
     }
 
     method tieneDificultadSimilar(otraReceta) {
-        return (self.dificultad() - otraReceta.dificultad()) < 1 
+        return (self.dificultad() - otraReceta.dificultad()).abs() < 1 
     }
 
     method esRecetaSimilar(otraReceta) {
@@ -30,10 +37,15 @@ class Receta {
         return self.cantidadIngredientes() * self.dificultad()
     }
 
-    method experiencia() {
-        return tipoComida.experienciaReceta(self)
+    method experiencia(cocinero) {
+        return self.tipoComida(cocinero).experienciaReceta(self)
     }
 
+    method tieneMenosIngredientesQue(unaCantidad) {
+        return self.cantidadIngredientes() < unaCantidad
+    }
+
+    
 }
 
 //Calidad comida
@@ -50,11 +62,19 @@ object pobre {
     }
 }
 
-object superior {
-    var property plus = 0 // inicializo para poder usar, se determina al momento de preparacion
+class Superior {
+    const property plus // inicializo para poder usar, se determina al momento de preparacion
 
     method experienciaReceta(unaReceta) {
         return unaReceta.experienciaNormal() + plus
     }
 }
 
+// PUNTO 4
+class RecetaGourmet inherits Receta {
+    override method experiencia(cocinero) {
+        return super(cocinero) * 2
+    }
+
+    override method esDificil() = true
+}
